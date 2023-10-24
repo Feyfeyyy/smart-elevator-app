@@ -3,14 +3,13 @@ from typing import List
 
 
 class Elevator:
-    def __init__(self, panel_id, current_floor=0, floors_serviced=None):
+    def __init__(self, panel_id, current_floor=0, floors_serviced=None, direction=None):
         if floors_serviced is None:
             floors_serviced = []
         self.panel_id: int = panel_id
         self.current_floor: int = current_floor
         self.floors_serviced: List = floors_serviced
-        self.target_floor = None
-        self.direction = None
+        self.direction: str = direction
 
     async def move(self):
         while self.target_floor is not None and self.current_floor != self.target_floor:

@@ -1,8 +1,7 @@
 import uvicorn
+from backend.routes.elevator_routes import router as elevator_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from backend.routes.elevator_routes import router as elevator_router
 
 app = FastAPI(
     title="SmartElevator API",
