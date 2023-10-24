@@ -24,7 +24,6 @@ This full stack application is designed to demonstrate the integration of FastAP
 Before you begin, ensure you have met the following requirements:
 
 - [Python](https://www.python.org/downloads/) (3.11+)
-- [Node.js](https://nodejs.org/en/download/) (16.11+)
 - [npm](https://www.npmjs.com/get-npm) (8.0+)
 - [react-scripts](https://www.npmjs.com/package/react-scripts) (5.0+)
 - [tailwindcss](https://www.npmjs.com/package/tailwindcss) (3.0+)
