@@ -4,8 +4,8 @@ from typing import Any, Dict, List
 
 from fastapi import APIRouter
 
-from backend.helpers.classes import Elevator
-from backend.models.elevators_models import (
+from ..helpers.classes import Elevator
+from ..models.elevators_models import (
     ElevatorConfig,
     ElevatorRequestResponse,
     FloorRequest,

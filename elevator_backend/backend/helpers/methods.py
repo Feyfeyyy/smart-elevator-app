@@ -3,8 +3,8 @@ import logging
 
 from fastapi import HTTPException
 
-from backend.helpers.classes import Elevator
-from backend.routes.elevator_routes import request_elevator, user_request_queue
+from ..helpers.classes import Elevator
+from ..routes.elevator_routes import request_elevator, user_request_queue
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
