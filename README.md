@@ -34,8 +34,8 @@ Before you begin, ensure you have met the following requirements:
 
 The project structure is organized as follows:
 
-- `elevator-backend/`: FastAPI backend code and configurations.
-- `elevator-frontend/`: React/ Tailwind frontend code and configurations.
+- `elevator_backend/`: FastAPI backend code and configurations.
+- `elevator_frontend/`: React/ Tailwind frontend code and configurations.
 
 ---
 

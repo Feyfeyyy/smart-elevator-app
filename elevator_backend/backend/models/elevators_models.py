@@ -14,7 +14,7 @@ class ElevatorRequestResponse(BaseModel):
 
 
 class ElevatorConfig(BaseModel):
-    id: int
+    id: str
     current_floor: int
     floors_serviced: List[int]
 

@@ -4,8 +4,8 @@ from typing import Any, Dict, List
 
 from fastapi import APIRouter
 
-from backend.helpers.classes import Elevator
-from backend.models.elevators_models import (
+from ..helpers.classes import Elevator
+from ..models.elevators_models import (
     ElevatorConfig,
     ElevatorRequestResponse,
     FloorRequest,
@@ -103,7 +103,7 @@ async def get_elevator_locations() -> ElevatorRequestResponse | list[dict[str, A
 @router.delete(
     "/delete_configure_elevators/{panel_id}", response_model=ElevatorRequestResponse
 )
-async def delete_configure_elevators(panel_id: int) -> ElevatorRequestResponse:
+async def delete_configure_elevators(panel_id: str) -> ElevatorRequestResponse:
     """
     Endpoint for deleting the elevators
     """
@@ -119,7 +119,7 @@ async def delete_configure_elevators(panel_id: int) -> ElevatorRequestResponse:
     response_model=ElevatorRequestResponse | Dict[str, Any],
 )
 async def get_single_elevator_locations(
-    panel_id: int,
+    panel_id: str,
 ) -> ElevatorRequestResponse | Dict[str, Any]:
     """
     Endpoint for getting the current location of a specific elevator
