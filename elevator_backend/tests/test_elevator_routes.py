@@ -5,7 +5,6 @@ from typing import Any
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import AsyncMock, Mock, patch
 
-import pytest
 
 import elevator_backend
 from elevator_backend.backend.helpers.classes import Elevator
@@ -110,8 +109,9 @@ class TestAssignedElevatorHandler(ElevatorRouteTestCase):
         assert response == nearest_id
 
     async def test_assigned_elevator_with_no_elevators(self) -> None:
-        with pytest.raises(ValueError, match="min\\(\\) arg is an empty sequence"):
-            await assigned_elevator(FloorRequest(floor=1))
+        response = await assigned_elevator(FloorRequest(floor=1))
+
+        assert response == ElevatorRequestResponse(message="No elevators configured")
 
 
 class TestConfigureElevatorsHandler(ElevatorRouteTestCase):
