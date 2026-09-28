@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
 const RequestQueue = ({ userRequests, onProcessComplete }) => {
@@ -9,13 +9,10 @@ const RequestQueue = ({ userRequests, onProcessComplete }) => {
       setProcessing(true);
       try {
         const userRequest = userRequests[0];
-        console.log("Processing user request:", userRequest);
         await axios.post("http://localhost:8000/user_request", {
           user_id: userRequest.user_id,
           floor_request: { floor: userRequest.floor },
         });
-        console.log("User request processed successfully.");
-        // Remove the processed request from the queue
         onProcessComplete();
       } catch (error) {
         console.error("Error handling user request:", error);
@@ -29,18 +26,27 @@ const RequestQueue = ({ userRequests, onProcessComplete }) => {
     processUserRequests();
   }, [processUserRequests]);
 
+  const status = processing
+    ? "Dispatching"
+    : userRequests.length > 0
+      ? "Call queued"
+      : "Standby";
+
   return (
-    <div className="flex items-center justify-center mb-5">
-      <div className="bg-gray-100 bg-opacity-80 p-4 rounded-lg border-2 border-black w-80">
-        <p className="text-lg text-center">Elevator Queue</p>
-        <p className="text-center italic ">
-          {processing
-            ? "Request is currently processing..."
-            : userRequests.length > 0
-            ? "Request is in the queue and awaiting processing..."
-            : "Queue is currently clear"}
-        </p>
-      </div>
+    <div className="flex items-center justify-between rounded-md bg-black/80 px-3 py-2 font-display text-xs uppercase tracking-[0.18em] text-amber-300">
+      <span className="flex items-center gap-2">
+        <span
+          className={`h-2 w-2 rounded-full ${
+            processing
+              ? "animate-pulse bg-amber-300"
+              : userRequests.length > 0
+                ? "bg-amber-300"
+                : "bg-emerald-400"
+          }`}
+        />
+        Hall call
+      </span>
+      <span>{status}</span>
     </div>
   );
 };

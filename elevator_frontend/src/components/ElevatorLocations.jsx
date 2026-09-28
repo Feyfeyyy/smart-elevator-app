@@ -1,41 +1,41 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUp, faArrowDown } from "@fortawesome/free-solid-svg-icons";
 
+const DirectionMark = ({ direction }) => {
+  if (direction === "up") {
+    return <FontAwesomeIcon icon={faArrowUp} className="text-amber-300" />;
+  }
+  if (direction === "down") {
+    return <FontAwesomeIcon icon={faArrowDown} className="text-amber-300" />;
+  }
+  return <span className="text-amber-300/40">–</span>;
+};
+
 const ElevatorLocations = ({ elevatorConfig }) => {
-  const getArrowIcon = (direction) => {
-    if (direction === "up") {
-      return <FontAwesomeIcon icon={faArrowUp} size="3x" />;
-    } else if (direction === "down") {
-      return <FontAwesomeIcon icon={faArrowDown} size="3x" />;
-    } else {
-      return <span>-</span>;
-    }
-  };
+  const cars = Array.isArray(elevatorConfig) ? elevatorConfig : [];
+
+  if (cars.length === 0) {
+    return null;
+  }
 
   return (
-    <div className="flex items-center justify-center space-x-10 mb-5">
-      <div className="bg-gray-100 bg-opacity-80 p-4 rounded-lg border-2 border-black text-center">
-        <p className="text-lg">Elevator Location:</p>
-        <ul>
-          {Array.isArray(elevatorConfig) &&
-            elevatorConfig.map((elevator) => (
-              <li key={elevator.id} className="italic my-2">
-                Current Floor: <strong>{elevator.current_floor}</strong>
-              </li>
-            ))}
-        </ul>
-      </div>
-      <div className="bg-gray-100 bg-opacity-80 p-4 rounded-lg border-2 border-black w-80 text-center">
-        <p className="text-lg">Direction:</p>
-        <ul>
-          {Array.isArray(elevatorConfig) &&
-            elevatorConfig.map((elevator) => (
-              <li key={elevator.id} className="my-2">
-                {getArrowIcon(elevator.direction)}
-              </li>
-            ))}
-        </ul>
-      </div>
+    <div className="grid grid-cols-2 gap-2">
+      {cars.map((elevator) => (
+        <div
+          key={elevator.id}
+          className="led-window flex items-center justify-between rounded-md px-3 py-2"
+        >
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.16em] text-amber-200/70">
+              Car {elevator.id}
+            </p>
+            <p className="text-2xl leading-none">
+              {String(elevator.current_floor).padStart(2, "0")}
+            </p>
+          </div>
+          <DirectionMark direction={elevator.direction} />
+        </div>
+      ))}
     </div>
   );
 };
