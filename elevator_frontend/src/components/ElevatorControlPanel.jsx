@@ -46,7 +46,7 @@ function ElevatorControlPanel() {
         } catch (error) {
           console.error("Error fetching elevator configuration:", error);
         }
-      }, 5000); // Fetch every 5 seconds
+      }, 500);
 
       return () => clearInterval(interval); // Clear the interval on unmounting to prevent memory leaks
     }
@@ -92,19 +92,9 @@ function ElevatorControlPanel() {
       ]);
 
       setAssignedElevator(assignedElevatorResponse.data);
-      const updatedElevatorConfig = getElevatorLocationsResponse.data.map(
-        (elevator) => {
-          if (elevator.current_floor === floor) {
-            return { ...elevator, direction: "none" };
-          } else if (elevator.current_floor < floor) {
-            return { ...elevator, direction: "up" };
-          } else {
-            return { ...elevator, direction: "down" };
-          }
-        }
-      );
-
-      setElevatorConfig(updatedElevatorConfig);
+      if (Array.isArray(getElevatorLocationsResponse.data)) {
+        setElevatorConfig(getElevatorLocationsResponse.data);
+      }
       setShowElevatorLocations(true);
     } catch (error) {
       console.error("Error requesting elevator:", error);
@@ -174,124 +164,190 @@ function ElevatorControlPanel() {
     setNewElevatorConfigs(updatedElevatorConfigs);
   };
 
+  const cars = Array.isArray(elevatorConfig) ? elevatorConfig : [];
+  const floors = Array.isArray(responseFloor)
+    ? [...responseFloor].sort((left, right) => Number(right) - Number(left))
+    : [];
+  const panelReady = cars.length > 0 || floors.length > 0;
+  const assignedLabel =
+    assignedElevator && typeof assignedElevator !== "object"
+      ? String(assignedElevator)
+      : assignedElevator?.message;
+  const movingCar =
+    cars.find((car) => String(car.id) === assignedLabel) || cars[0];
+  const displayFloor = movingCar
+    ? String(movingCar.current_floor).padStart(2, "0")
+    : "--";
+  const hallDirection = movingCar?.direction;
+  const isTraveling = hallDirection === "up" || hallDirection === "down";
+  const travelLabel = isTraveling ? `Passing ${displayFloor}` : "Idle";
+
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <RequestQueue
-        userRequests={userRequests}
-        onProcessComplete={() => setUserRequests(userRequests.slice(1))}
-      />
-      {showElevatorLocations && (
-        <ElevatorLocations elevatorConfig={elevatorConfig} />
-      )}
-      <div className="w-1/2 mb-10">
-        {elevatorConfig.length === 0 ? (
-          <div className="text-center">
-            <p className="text-2xl text-red-500">
-              Please first configure the elevator.
+    <div className="flex w-full max-w-3xl items-stretch justify-center gap-5">
+      <section
+        className="relative hidden w-56 flex-col self-stretch overflow-hidden rounded-sm md:flex"
+        aria-hidden="true"
+      >
+        <div className="absolute inset-x-0 top-0 z-10 flex justify-center">
+          <div className="led-window mt-6 w-24 rounded-md py-3 text-center text-4xl">
+            {displayFloor}
+          </div>
+        </div>
+        <div className="flex min-h-[28rem] flex-1">
+          <div className="door w-1/2 border-r border-black/30" />
+          <div className="door w-1/2 border-l border-black/40" />
+        </div>
+        <p className="absolute inset-x-0 bottom-6 text-center text-[10px] uppercase tracking-[0.28em] text-slate-800/70">
+          {isTraveling ? travelLabel : "Doors"}
+        </p>
+      </section>
+
+      <section className="panel-metal w-full max-w-sm rounded-[2rem] p-4">
+        <div className="rounded-[1.4rem] bg-gradient-to-b from-black/10 to-black/5 p-4">
+          <header className="mb-4 text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-700">
+              Smart Elevator
             </p>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center space-y-4 mb-10">
-            <p className="text-2xl text-center italic">Choose a floor:</p>
-            <div className="flex items-center space-x-4">
-              {responseFloor.map((floor, index) => (
-                <button
-                  key={index}
-                  onClick={() => setFloor(floor)}
-                  className="text-white bg-gradient-to-br from-green-400 to-blue-600 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-green-200 dark:focus:ring-green-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
-                >
-                  {`Floor ${floor}`}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-        {!showManualFloorInput && elevatorConfig.length > 0 && (
-          <div className="flex justify-center mb-4">
-            <button
-              onClick={handleShowManualFloorInput}
-              className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-2 py-1 text-center mr-2 mb-2 italic"
-            >
-              Manually Enter Floor
-            </button>
-          </div>
-        )}
-        {showManualFloorInput && elevatorConfig.length > 0 && (
-          <div>
-            <label className="block mb-4 text-6xl font-medium text-gray-900 dark:text-white">
-              Floor Number:
-              <div className="text-xs italic text-gray-500 dark:text-gray-400">
-                (what floor are you on?)
-              </div>
-              <input
-                type="number"
-                value={floor}
-                onChange={(e) => setFloor(e.target.value)}
-                className="w-full p-4 mt-5 text-9xl bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              />
-            </label>
-            <div className="flex justify-center mb-4">
-              <button
-                onClick={handleCancelManualFloorInput}
-                className="py-2 px-4 bg-red-500 text-white rounded-lg"
-              >
-                Cancel Manual Entry
-              </button>
-            </div>
-          </div>
-        )}
-        <div className="flex justify-center">
-          {elevatorConfig.length === 0 ? (
-            <div></div>
-          ) : (
-            <button
-              onClick={handleRequestElevator}
-              className="relative inline-flex items-center justify-center p-1 mb-2 mr-2 overflow-hidden text-3xl font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-green-400 to-blue-600 group-hover:from-green-400 group-hover:to-blue-600 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-green-200 dark:focus:ring-green-800 mb-5"
-            >
-              <span className="relative px-6 py-3 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
-                Request Elevator
-              </span>
-            </button>
-          )}
-        </div>
-        <div className="relative flex justify-center">
-          {assignedElevator && (
-            <div className="bg-gray-100 bg-opacity-80 p-4 rounded-lg text-lg relative">
-              Your Assigned Elevator: <strong>{assignedElevator}</strong>
-            </div>
-          )}
-        </div>
-      </div>
-      <div className="flex items-center flex-col mb-10">
-        {!showForm && (
-          <div>
-            <button
-              onClick={handleConfigureElevator}
-              className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-lg px-20 py-10 text-center mr-2 mb-2"
-            >
-              Configure Elevator
-            </button>
-            {responseMessage && (
-              <div className="bg-gray-100 border border-gray-300 p-4 rounded-md my-4">
-                <p className="text-lg text-center text-gray-800">
-                  {responseMessage}
+          </header>
+
+          <div className="space-y-3">
+            <div className="led-window rounded-lg px-4 py-3">
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-amber-200/70">
+                    Floor
+                  </p>
+                  <p className="text-5xl leading-none">{displayFloor}</p>
+                </div>
+                <p className="pb-1 text-right text-sm uppercase tracking-[0.16em]">
+                  {hallDirection === "up"
+                    ? `▲ ${travelLabel}`
+                    : hallDirection === "down"
+                      ? `▼ ${travelLabel}`
+                      : "● Idle"}
                 </p>
               </div>
+            </div>
+
+            <RequestQueue
+              userRequests={userRequests}
+              onProcessComplete={() => setUserRequests(userRequests.slice(1))}
+            />
+
+            {showElevatorLocations && (
+              <ElevatorLocations elevatorConfig={elevatorConfig} />
+            )}
+
+            {showForm ? (
+              <div className="rounded-xl bg-slate-100/80 p-3">
+                <ElevatorConfiguration
+                  showForm={showForm}
+                  newElevatorConfigs={newElevatorConfigs}
+                  handleFormSubmit={handleFormSubmit}
+                  handleInputChange={handleInputChange}
+                  handleAddElevator={handleAddElevator}
+                  handleRemoveElevator={handleRemoveElevator}
+                  setShowForm={setShowForm}
+                />
+              </div>
+            ) : (
+              <>
+                {panelReady ? (
+                  <div className="rounded-xl bg-black/10 p-4">
+                    <p className="mb-3 text-center text-[10px] uppercase tracking-[0.22em] text-slate-600">
+                      Select floor
+                    </p>
+                    <div className="mx-auto grid max-w-[14rem] grid-cols-3 justify-items-center gap-3">
+                      {floors.map((servedFloor) => (
+                        <button
+                          key={servedFloor}
+                          type="button"
+                          onClick={() => setFloor(servedFloor)}
+                          className={`floor-button font-display text-lg ${
+                            isTraveling &&
+                            Number(movingCar.current_floor) === Number(servedFloor)
+                              ? "is-passing"
+                              : Number(floor) === Number(servedFloor)
+                                ? "is-selected"
+                                : ""
+                          }`}
+                        >
+                          {servedFloor}
+                        </button>
+                      ))}
+                    </div>
+
+                    {showManualFloorInput ? (
+                      <div className="mt-4 space-y-2">
+                        <label className="block text-center text-[10px] uppercase tracking-[0.18em] text-slate-600">
+                          Floor number
+                          <input
+                            type="number"
+                            value={floor}
+                            onChange={(event) => setFloor(event.target.value)}
+                            className="led-window mt-2 w-full rounded-md py-2 text-center text-3xl outline-none"
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={handleCancelManualFloorInput}
+                          className="w-full text-xs uppercase tracking-wider text-slate-600"
+                        >
+                          Close keypad
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleShowManualFloorInput}
+                        className="mt-4 w-full text-center text-[10px] uppercase tracking-[0.18em] text-slate-600"
+                      >
+                        Enter floor
+                      </button>
+                    )}
+
+                    <div className="mt-5 flex flex-col items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={handleRequestElevator}
+                        className="call-button font-display text-xs"
+                      >
+                        Call
+                      </button>
+                      {assignedLabel && (
+                        <p className="text-center text-sm text-slate-800">
+                          Proceed to car{" "}
+                          <span className="font-display text-base">{assignedLabel}</span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-xl bg-black/10 px-4 py-8 text-center">
+                    <p className="font-display text-3xl text-slate-800">--</p>
+                    <p className="mt-2 text-sm text-slate-600">
+                      This bank has no cars yet. Open service setup to add one.
+                    </p>
+                  </div>
+                )}
+
+                <div className="pt-2 text-center">
+                  <button
+                    type="button"
+                    onClick={handleConfigureElevator}
+                    className="text-[11px] uppercase tracking-[0.2em] text-slate-600 underline-offset-4 hover:underline"
+                  >
+                    Service setup
+                  </button>
+                  {responseMessage && (
+                    <p className="mt-2 text-sm text-slate-800">{responseMessage}</p>
+                  )}
+                </div>
+              </>
             )}
           </div>
-        )}
-        {showForm && (
-          <ElevatorConfiguration
-            showForm={showForm}
-            newElevatorConfigs={newElevatorConfigs}
-            handleFormSubmit={handleFormSubmit}
-            handleInputChange={handleInputChange}
-            handleAddElevator={handleAddElevator}
-            handleRemoveElevator={handleRemoveElevator}
-            setShowForm={setShowForm}
-          />
-        )}
-      </div>
+        </div>
+      </section>
     </div>
   );
 }
