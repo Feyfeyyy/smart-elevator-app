@@ -22,7 +22,7 @@ async def process_user_requests() -> None:
             try:
                 elevator_number = await request_elevator(user_request.floor_request)
                 logger.info(
-                    f"User {user_request.user_id} assigned Elevator {elevator_number}"
+                    f"User {user_request.user_id} assigned Elevator {elevator_number}",
                 )
             except HTTPException as e:
                 logger.error(f"Error processing user request: {e}")
@@ -40,12 +40,12 @@ async def simulate_elevators() -> None:
 
     for i in range(3):
         elevators.append(
-            Elevator(panel_id=i, current_floor=0, floors_serviced=[0, 1, 2])
+            Elevator(panel_id=i, current_floor=0, floors_serviced=[0, 1, 2]),
         )
 
     while True:
         for elevator in elevators:
             logger.info(
-                f"Elevator {elevator.panel_id} is at floor {elevator.current_floor} and moving {elevator.direction}"
+                f"Elevator {elevator.panel_id} is at floor {elevator.current_floor} and moving {elevator.direction}",
             )
             await elevator.move()

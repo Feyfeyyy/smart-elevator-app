@@ -8,6 +8,7 @@ Table of Contents
 
 - [Prerequisites](#prerequisites)
 - [Setup](#setup)
+- [Start the server](#start-the-server)
 - [Linting](#linting)
 - [Formatting](#formatting)
 
@@ -29,7 +30,19 @@ Before running the application, ensure you have the following dependencies insta
 ```bash
 uv sync
 ```
-   
+
+---
+
+## Start the server
+
+From `elevator_backend`, start the API with uv:
+
+```bash
+uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+The server listens on [http://localhost:8000](http://localhost:8000). Interactive API docs are available at [http://localhost:8000/docs](http://localhost:8000/docs).
+
 ---
 
 ## Linting
