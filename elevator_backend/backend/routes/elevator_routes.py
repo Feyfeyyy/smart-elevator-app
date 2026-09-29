@@ -19,12 +19,22 @@ elevators = []
 
 
 async def update_elevator_floor(floor) -> None:
-    """Function to update the current floor of an elevator after a delay"""
-    # Simulate the delay
-    await asyncio.sleep(5)
-    global elevators
-    for elevator in elevators:
-        elevator.current_floor = floor
+    """Move the nearest car through each floor until it reaches the call."""
+    if not elevators:
+        return
+
+    elevator = min(elevators, key=lambda car: abs(car.current_floor - floor))
+    elevator.target_floor = floor
+    while elevator.current_floor != floor:
+        if elevator.current_floor < floor:
+            elevator.direction = "up"
+            elevator.current_floor += 1
+        else:
+            elevator.direction = "down"
+            elevator.current_floor -= 1
+        await asyncio.sleep(1)
+    elevator.direction = "none"
+    elevator.target_floor = None
 
 
 @router.post("/user_request", response_model=ElevatorRequestResponse)
@@ -78,7 +88,8 @@ async def configure_elevators(
             floor_set.add(floor)
     unique_floor_list = list(floor_set)
     return ElevatorRequestResponse(
-        message="Elevator configuration updated", floors_serviced=unique_floor_list,
+        message="Elevator configuration updated",
+        floors_serviced=unique_floor_list,
     )
 
 
@@ -99,7 +110,8 @@ async def get_elevator_locations() -> ElevatorRequestResponse | list[dict[str, A
 
 
 @router.delete(
-    "/delete_configure_elevators/{panel_id}", response_model=ElevatorRequestResponse,
+    "/delete_configure_elevators/{panel_id}",
+    response_model=ElevatorRequestResponse,
 )
 async def delete_configure_elevators(panel_id: str) -> ElevatorRequestResponse:
     """Endpoint for deleting the elevators"""

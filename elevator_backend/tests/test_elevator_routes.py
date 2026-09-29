@@ -5,7 +5,6 @@ from typing import Any
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import AsyncMock, Mock, patch
 
-
 import elevator_backend
 from elevator_backend.backend.helpers.classes import Elevator
 from elevator_backend.backend.models.elevators_models import (
@@ -329,7 +328,7 @@ class TestRequestElevatorHandler(ElevatorRouteTestCase):
         )
         assert routes.elevators[0].current_floor == test_floor
 
-    async def test_update_elevator_floor_updates_every_car(self) -> None:
+    async def test_update_elevator_floor_moves_nearest_car_through_floors(self) -> None:
         routes.elevators.extend(
             [
                 Elevator(panel_id="a", current_floor=1, floors_serviced=[1]),
@@ -341,6 +340,8 @@ class TestRequestElevatorHandler(ElevatorRouteTestCase):
             "elevator_backend.backend.routes.elevator_routes.asyncio.sleep",
             new=AsyncMock(),
         ):
-            await update_elevator_floor(8)
+            await update_elevator_floor(0)
 
-        assert [elevator.current_floor for elevator in routes.elevators] == [8, 8]
+        assert routes.elevators[0].current_floor == 0
+        assert routes.elevators[0].direction == "none"
+        assert routes.elevators[1].current_floor == 4
