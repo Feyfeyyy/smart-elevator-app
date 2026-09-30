@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import API_URL from "../api";
 import ElevatorConfiguration from "./ElevatorConfiguration";
 import RequestQueue from "./RequestQueue";
 import ElevatorLocations from "./ElevatorLocations";
@@ -23,7 +24,7 @@ function ElevatorControlPanel() {
     async function fetchElevatorConfig() {
       try {
         const response = await axios.get(
-          "http://localhost:8000/elevator_locations"
+          `${API_URL}/elevator_locations`
         );
         setElevatorConfig(response.data);
       } catch (error) {
@@ -40,7 +41,7 @@ function ElevatorControlPanel() {
       const interval = setInterval(async () => {
         try {
           const response = await axios.get(
-            "http://localhost:8000/elevator_locations"
+            `${API_URL}/elevator_locations`
           );
           setElevatorConfig(response.data);
         } catch (error) {
@@ -71,25 +72,22 @@ function ElevatorControlPanel() {
       setUserRequests(newUserRequests);
 
       const requestElevatorPromise = axios.post(
-        "http://localhost:8000/request_elevator",
+        `${API_URL}/request_elevator`,
         { floor: floor }
       );
       const assignedElevatorPromise = axios.post(
-        "http://localhost:8000/assigned_elevator",
+        `${API_URL}/assigned_elevator`,
         { floor: floor }
       );
       const getElevatorLocationsPromise = axios.get(
-        "http://localhost:8000/elevator_locations"
+        `${API_URL}/elevator_locations`
       );
-      const [
-        requestElevatorResponse,
-        assignedElevatorResponse,
-        getElevatorLocationsResponse,
-      ] = await axios.all([
-        requestElevatorPromise,
-        assignedElevatorPromise,
-        getElevatorLocationsPromise,
-      ]);
+      const [, assignedElevatorResponse, getElevatorLocationsResponse] =
+        await axios.all([
+          requestElevatorPromise,
+          assignedElevatorPromise,
+          getElevatorLocationsPromise,
+        ]);
 
       setAssignedElevator(assignedElevatorResponse.data);
       if (Array.isArray(getElevatorLocationsResponse.data)) {
@@ -122,7 +120,7 @@ function ElevatorControlPanel() {
     event.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:8000/configure_elevators",
+        `${API_URL}/configure_elevators`,
         newElevatorConfigs
       );
       setResponseMessage(response.data.message);
@@ -137,7 +135,7 @@ function ElevatorControlPanel() {
       }, 5000); // 5 seconds (in milliseconds)
       try {
         const response = await axios.get(
-          "http://localhost:8000/elevator_locations"
+          `${API_URL}/elevator_locations`
         );
         setElevatorConfig(response.data);
       } catch (error) {

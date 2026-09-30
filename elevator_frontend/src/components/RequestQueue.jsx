@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import API_URL from "../api";
 
 const RequestQueue = ({ userRequests, onProcessComplete }) => {
   const [processing, setProcessing] = useState(false);
@@ -9,7 +10,7 @@ const RequestQueue = ({ userRequests, onProcessComplete }) => {
       setProcessing(true);
       try {
         const userRequest = userRequests[0];
-        await axios.post("http://localhost:8000/user_request", {
+        await axios.post(`${API_URL}/user_request`, {
           user_id: userRequest.user_id,
           floor_request: { floor: userRequest.floor },
         });

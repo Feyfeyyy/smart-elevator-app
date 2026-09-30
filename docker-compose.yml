@@ -1,0 +1,25 @@
+name: smart-elevator
+
+services:
+  api:
+    build:
+      context: ./elevator_backend
+    image: smart-elevator-api
+    ports:
+      - "8000:8000"
+    init: true
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./elevator_frontend
+      args:
+        REACT_APP_API_URL: ""
+    image: smart-elevator-web
+    ports:
+      - "3000:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    init: true
+    restart: unless-stopped
