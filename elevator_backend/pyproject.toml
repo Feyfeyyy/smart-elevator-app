@@ -34,6 +34,10 @@ testpaths = ["tests"]
 source = ["backend", "main"]
 branch = true
 
+[tool.isort]
+profile = "black"
+line_length = 88
+
 [tool.black]
 line-length = 88
 include = '\.pyi?$'
